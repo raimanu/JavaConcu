@@ -1,0 +1,5 @@
+nc\server\Server.class
+nc\client\Client.class
+nc\client\ClientUI.class
+nc\ITchat.class
+nc\server\ServerUI.class
