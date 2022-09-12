@@ -52,15 +52,18 @@ public class Server extends Thread implements ITchat {
         try{
         this.selector = Selector.open();
         this.ssc = ServerSocketChannel.open();
+        ssc.configureBlocking(false);
         InetSocketAddress inetSocket = new InetSocketAddress(ip, port);
         ssc.bind(inetSocket);
-        ssc.configureBlocking(false);
+        sendLogToUI("Serveur créer");
         } catch(IOException e){
-        System.out.println("Exception entrée/sortie");
+            System.out.println("Ioexception");
+            e.printStackTrace();
         }
         int ops = ssc.validOps();
         try{
         SelectionKey keySelec = ssc.register(selector, ops, null);
+        sendLogToUI("Fin");
         } catch(ClosedChannelException e){
             System.out.println("ClosedChannelException exception");
         }
@@ -79,31 +82,21 @@ public class Server extends Thread implements ITchat {
     public void run(){
 
         // TODO A completer
+        sendLogToUI("Lancement du serveur");
         try{
         while (true) {
-            // Selects a set of keys whose corresponding channels are ready for I/O operations
             selector.select();
-            // token representing the registration of a SelectableChannel with a Selector
             Set<SelectionKey> keys = selector.selectedKeys();
             Iterator<SelectionKey> iterateur = keys.iterator();
             while (iterateur.hasNext()) {
                 SelectionKey key = iterateur.next();
-                // Tests whether this key's channel is ready to accept a new socket connection
                 if (key.isAcceptable()) {
                     SocketChannel client = ssc.accept();
-                    // Adjusts this channel's blocking mode to false
                     client.configureBlocking(false);
-                    // Operation-set bit for read operations
                     client.register(selector, SelectionKey.OP_READ);
-                    // Tests whether this key's channel is ready for reading
                 } else if (key.isReadable()) {
                     
                     SocketChannel client = (SocketChannel) key.channel();
-                    
-                    // ByteBuffer: A byte buffer.
-                    // This class defines six categories of operations upon byte buffers:
-                    // Absolute and relative get and put methods that read and write single bytes;
-                    // Absolute and relative bulk get methods that transfer contiguous sequences of bytes from this buffer into an array;
                     ByteBuffer buffer = ByteBuffer.allocate(256);
                     client.read(buffer);
                     String resultat = new String(buffer.array()).trim();
