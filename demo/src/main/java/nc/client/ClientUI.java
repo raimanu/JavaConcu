@@ -144,6 +144,8 @@ public class ClientUI extends Application implements EventHandler {
 
         // Demarrage de la connexion au serveur
         // TODO A completer
+        Client client = new Client(this, ip.getText(), Integer.parseInt(port.getText()), nickname.getText());
+        client.start();
 
         // Changement de l etat du client
         running = true;
