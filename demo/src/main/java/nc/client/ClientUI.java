@@ -145,6 +145,7 @@ public class ClientUI extends Application implements EventHandler {
         // Demarrage de la connexion au serveur
         // TODO A completer
         Client client = new Client(this, ip.getText(), Integer.parseInt(port.getText()), nickname.getText());
+        this.client = client;
         client.start();
 
         // Changement de l etat du client
@@ -191,6 +192,7 @@ public class ClientUI extends Application implements EventHandler {
         // Envoi du texte si on appui sur entree et que le contenu n est pas vide
         if (event.getCode() == KeyCode.ENTER && input.getText().trim().length() > 0) {
             // TODO A completer
+            this.client.addMessage(input.getText());
             input.setText("");
         }
     }

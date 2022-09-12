@@ -100,9 +100,7 @@ public class Server extends Thread implements ITchat {
                     ByteBuffer buffer = ByteBuffer.allocate(256);
                     client.read(buffer);
                     String resultat = new String(buffer.array()).trim();
-                    if (resultat.equals("Server.com")) {
-                        client.close();
-                    }
+                    sendLogToUI(resultat);
                 }
                 iterateur.remove();
             }

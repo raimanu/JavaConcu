@@ -2,6 +2,7 @@ package nc.client;
 
 import nc.ITchat;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.net.Socket;
 import java.io.*;
@@ -16,12 +17,18 @@ public class Client extends Thread implements ITchat {
     String hostname;
     int port;
     String nickname;
+    SocketChannel sc;
 
     public Client(ClientUI clientUI, String hostname, int port, String nickname) {
       this.clientUI = clientUI;
       this.hostname = hostname;
       this.port = port;
       this.nickname = nickname;
+      try{
+      this.sc = SocketChannel.open();}
+      catch(IOException e){
+
+      }
     }
 
     /**
@@ -30,13 +37,10 @@ public class Client extends Thread implements ITchat {
      */
     public void addMessage(String message) {
       try {
-        Socket s = new Socket(InetAddress.getLocalHost(), 6699);
-        PrintWriter p = new PrintWriter(s.getOutputStream());
-        BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
-        message = br.readLine();
-        br.close();
-        p.close();
-        s.close();
+        byte[] result = new String(message).getBytes();
+        ByteBuffer buffer = ByteBuffer.wrap(result);
+        this.sc.write(buffer);
+        buffer.clear();
       } catch(Exception e){
 
       }

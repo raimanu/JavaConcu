@@ -112,7 +112,7 @@ public class ServerUI extends Application implements EventHandler {
 
         // Demarrage du serveur
         // TODO A completer
-        Server serv = new Server(this,"127.0.0.1",6969);
+        Server serv = new Server(this,ip.getText(),Integer.parseInt(port.getText()));
         serv.start();
 
     }
