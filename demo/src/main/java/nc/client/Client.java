@@ -12,7 +12,7 @@ import java.net.InetAddress;
  */
 public class Client extends Thread implements ITchat {
 
-    ClientUI clientUI = new ClientUI();
+    ClientUI clientUI;
     String hostname;
     int port;
     String nickname;
@@ -30,7 +30,7 @@ public class Client extends Thread implements ITchat {
      */
     public void addMessage(String message) {
       try {
-        Socket s = new Socket(InetAddress.getLocalHost(), 1111);
+        Socket s = new Socket(InetAddress.getLocalHost(), 6699);
         PrintWriter p = new PrintWriter(s.getOutputStream());
         BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
         message = br.readLine();
