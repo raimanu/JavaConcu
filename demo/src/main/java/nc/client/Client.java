@@ -48,7 +48,7 @@ public class Client extends Thread implements ITchat {
      */
     public void run() {
       try {
-        SocketChannel sc = new SocketChannel(InetAddress.getLocalHost(), 1111);
+        SocketChannel sc = SocketChannel.open();
       } catch(Exception e){
 
       }
