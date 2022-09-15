@@ -35,7 +35,7 @@ public class Server extends Thread implements ITchat {
     private ServerSocketChannel ssc;
     private Selector selector;
     private ByteBuffer buffer = ByteBuffer.allocate(1024);
-    private StringBuffer stringReq = new StringBuffer();
+    private StringBuffer  message = new StringBuffer();
 
     /**
      * Constructeur
@@ -83,8 +83,6 @@ public class Server extends Thread implements ITchat {
         while (true) {
             try{
                 ssc.register(selector, SelectionKey.OP_ACCEPT);
-                sendLogToUI("Fin");
-        
                 } catch(ClosedChannelException e){
                     System.out.println("ClosedChannelException exception");
                 }
@@ -101,16 +99,16 @@ public class Server extends Thread implements ITchat {
                     SocketChannel client = (SocketChannel) key.channel();
                     buffer.clear();
                     client.read(buffer);
-                    
                     buffer.flip();
                     while(buffer.hasRemaining()) {
                         char c = (char) buffer.get();
                         if (c == '\r' || c == '\n') break;
-                            stringReq.append(c);
+                             message.append(c);
                 }
-                sendLogToUI("Message reçu:" + stringReq);
+                sendLogToUI("Message de " +  message);
             }
-                iterateur.remove();
+            message.setLength(0);
+            iterateur.remove();
             }
         }
     } catch(IOException e){
@@ -172,6 +170,6 @@ public class Server extends Thread implements ITchat {
                 while(buffer.hasRemaining()) {
                     char c = (char) buffer.get();
                     if (c == '\r' || c == '\n') break;
-                    stringReq.append(c);             
+                     message.append(c);             
                 }
             }*/

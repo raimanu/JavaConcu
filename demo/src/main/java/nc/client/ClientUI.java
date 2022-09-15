@@ -54,7 +54,7 @@ public class ClientUI extends Application implements EventHandler {
         connect.setOnAction(this);
         disconnect = new Button("Disconnect");
         disconnect.setOnAction(this);
-        toolBar.getItems().addAll(ip, port, connect, disconnect);
+        toolBar.getItems().addAll(ip, port, nickname, connect, disconnect);
         borderPane.setTop(toolBar);
 
         // Zone centrale de log de tchat
@@ -193,7 +193,7 @@ public class ClientUI extends Application implements EventHandler {
         if (event.getCode() == KeyCode.ENTER && input.getText().trim().length() > 0) {
             // TODO A completer
             appendMessage("Envoie du message");
-            this.client.addMessage(input.getText());
+            this.client.addMessage("" + this.client.nickname + " : " + input.getText());
             input.setText("");
         }
     }
