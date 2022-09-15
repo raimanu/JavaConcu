@@ -1,8 +1,12 @@
 package nc.client;
 
 import nc.ITchat;
+import nc.server.Server;
+
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.net.Socket;
 import java.io.*;
@@ -25,7 +29,10 @@ public class Client extends Thread implements ITchat {
       this.port = port;
       this.nickname = nickname;
       try{
-      this.sc = SocketChannel.open();}
+      this.sc = SocketChannel.open(new InetSocketAddress(hostname, port));
+      sc.configureBlocking(false);
+    }
+      
       catch(IOException e){
 
       }
@@ -39,7 +46,9 @@ public class Client extends Thread implements ITchat {
       try {
         byte[] result = new String(message).getBytes();
         ByteBuffer buffer = ByteBuffer.wrap(result);
-        this.sc.write(buffer);
+        buffer.put(message.getBytes());
+        buffer.flip();
+        sc.write(buffer);
         buffer.clear();
       } catch(Exception e){
 
@@ -52,7 +61,9 @@ public class Client extends Thread implements ITchat {
      */
     public void run() {
       try {
-        SocketChannel sc = SocketChannel.open();
+        Selector selector = Selector.open();
+        sc.register(selector, SelectionKey.OP_CONNECT);
+        
       } catch(Exception e){
 
       }

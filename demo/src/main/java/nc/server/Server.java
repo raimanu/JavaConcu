@@ -34,6 +34,8 @@ public class Server extends Thread implements ITchat {
     private int port;
     private ServerSocketChannel ssc;
     private Selector selector;
+    private ByteBuffer buffer = ByteBuffer.allocate(1024);
+    private StringBuffer stringReq = new StringBuffer();
 
     /**
      * Constructeur
@@ -60,13 +62,7 @@ public class Server extends Thread implements ITchat {
             System.out.println("Ioexception");
             e.printStackTrace();
         }
-        int ops = ssc.validOps();
-        try{
-        SelectionKey keySelec = ssc.register(selector, ops, null);
-        sendLogToUI("Fin");
-        } catch(ClosedChannelException e){
-            System.out.println("ClosedChannelException exception");
-        }
+
     }
 
     /**
@@ -85,6 +81,13 @@ public class Server extends Thread implements ITchat {
         sendLogToUI("Lancement du serveur");
         try{
         while (true) {
+            try{
+                ssc.register(selector, SelectionKey.OP_ACCEPT);
+                sendLogToUI("Fin");
+        
+                } catch(ClosedChannelException e){
+                    System.out.println("ClosedChannelException exception");
+                }
             selector.select();
             Set<SelectionKey> keys = selector.selectedKeys();
             Iterator<SelectionKey> iterateur = keys.iterator();
@@ -95,7 +98,55 @@ public class Server extends Thread implements ITchat {
                     client.configureBlocking(false);
                     client.register(selector, SelectionKey.OP_READ);
                 } else if (key.isReadable()) {
+                    SocketChannel client = (SocketChannel) key.channel();
+                    buffer.clear();
+                    client.read(buffer);
                     
+                    buffer.flip();
+                    while(buffer.hasRemaining()) {
+                        char c = (char) buffer.get();
+                        if (c == '\r' || c == '\n') break;
+                            stringReq.append(c);
+                }
+                sendLogToUI("Message reçu:" + stringReq);
+            }
+                iterateur.remove();
+            }
+        }
+    } catch(IOException e){
+        System.out.println("Ioexception");
+    }
+    } 
+		
+	// TODO A completer
+}
+
+
+
+
+/*{
+
+        // TODO A completer
+        sendLogToUI("Lancement du serveur");
+        try{
+        while (true) {
+            try{
+                ssc.register(selector, SelectionKey.OP_ACCEPT);
+                sendLogToUI("Fin");
+        
+                } catch(ClosedChannelException e){
+                    System.out.println("ClosedChannelException exception");
+                }
+            selector.select();
+            Set<SelectionKey> keys = selector.selectedKeys();
+            Iterator<SelectionKey> iterateur = keys.iterator();
+            while (iterateur.hasNext()) {
+                SelectionKey key = iterateur.next();
+                if (key.isAcceptable()) {
+                    SocketChannel client = ssc.accept();
+                    client.configureBlocking(false);
+                    client.register(selector, SelectionKey.OP_READ);
+                } else if (key.isReadable()) {
                     SocketChannel client = (SocketChannel) key.channel();
                     ByteBuffer buffer = ByteBuffer.allocate(256);
                     client.read(buffer);
@@ -108,7 +159,19 @@ public class Server extends Thread implements ITchat {
     } catch(IOException e){
         System.out.println("Ioexception");
     }
-    }
-		
-	// TODO A completer
-}
+    } 
+    
+    
+    
+    
+    
+    while (true){   
+                buffer.clear();
+                client.read(buffer);
+                buffer.flip();
+                while(buffer.hasRemaining()) {
+                    char c = (char) buffer.get();
+                    if (c == '\r' || c == '\n') break;
+                    stringReq.append(c);             
+                }
+            }*/
