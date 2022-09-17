@@ -192,7 +192,7 @@ public class ClientUI extends Application implements EventHandler {
         // Envoi du texte si on appui sur entree et que le contenu n est pas vide
         if (event.getCode() == KeyCode.ENTER && input.getText().trim().length() > 0) {
             // TODO A completer
-            appendMessage("Envoie du message");
+            appendMessage("Envoie du message\n");
             this.client.addMessage("" + this.client.nickname + " : " + input.getText());
             input.setText("");
         }

@@ -22,6 +22,7 @@ public class Client extends Thread implements ITchat {
     int port;
     String nickname;
     SocketChannel sc;
+    Selector selector;
 
     public Client(ClientUI clientUI, String hostname, int port, String nickname) {
       this.clientUI = clientUI;
@@ -32,9 +33,9 @@ public class Client extends Thread implements ITchat {
       this.sc = SocketChannel.open(new InetSocketAddress(hostname, port));
       sc.configureBlocking(false);
     }
-      
       catch(IOException e){
-
+        System.out.println("Exception throw dans le constructeur de la classe client");
+        e.getStackTrace();
       }
     }
 
@@ -44,14 +45,18 @@ public class Client extends Thread implements ITchat {
      */
     public void addMessage(String message) {
       try {
+        
         byte[] result = new String(message).getBytes();
         ByteBuffer buffer = ByteBuffer.wrap(result);
+        buffer.clear();
+        sc.register(selector, SelectionKey.OP_WRITE);
         buffer.put(message.getBytes());
         buffer.flip();
         sc.write(buffer);
-        buffer.clear();
+        
       } catch(Exception e){
-
+        System.out.println("Exception throw dans la méthode addMessage de la classe client");
+        e.getStackTrace();
       }
     }
 
@@ -61,11 +66,13 @@ public class Client extends Thread implements ITchat {
      */
     public void run() {
       try {
-        Selector selector = Selector.open();
+        selector = Selector.open();
         sc.register(selector, SelectionKey.OP_CONNECT);
+        sc.finishConnect();
         
       } catch(Exception e){
-
+        System.out.println("Exception throw dans le run de la classe client");
+        e.getStackTrace();
       }
     }
 

@@ -114,6 +114,7 @@ public class ServerUI extends Application implements EventHandler {
         // TODO A completer
         Server serv = new Server(this,ip.getText(),Integer.parseInt(port.getText()));
         serv.start();
+        
 
     }
 
@@ -148,6 +149,7 @@ public class ServerUI extends Application implements EventHandler {
 
         // On marque l'arret et on attends l'arret du server
         running = false;
+        
     }
 
     /**
