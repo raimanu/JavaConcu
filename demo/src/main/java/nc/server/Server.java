@@ -132,14 +132,14 @@ public class Server extends Thread implements ITchat {
             {
                 String[] arrayContent = message.toString().split(split);;
                     String messageFinal = arrayContent[0];
-                    BroadCast(selector, null, messageFinal);
+                    BroadCast(messageFinal, selector, null);
                 } 
             }
             
         }
 
 
-    public void BroadCast(Selector selector, SocketChannel sk, String message) throws IOException {
+    public void BroadCast(String message, Selector selector, SocketChannel sk) throws IOException {
         //Envoie du message à tout les clients connecté, même à l'envoyeur, à revoir
         for(SelectionKey key : selector.keys())
         {
@@ -147,7 +147,7 @@ public class Server extends Thread implements ITchat {
             if(targetchannel instanceof SocketChannel && targetchannel!=sk)
             {
                 SocketChannel dest = (SocketChannel)targetchannel;
-                sendLogToUI(""+dest.write(charset.encode(message)) +"\n");
+                dest.write(charset.encode(message));
             }
         }
     }

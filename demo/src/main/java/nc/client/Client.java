@@ -71,7 +71,7 @@ public class Client extends Thread implements ITchat {
     public void run() {
       try
       {
-          while(true) {
+          while(clientUI.isRunning()) {
               int readyChannels = selector.select();
               if(readyChannels == 0) continue; 
               Set selectedKeys = selector.selectedKeys();
