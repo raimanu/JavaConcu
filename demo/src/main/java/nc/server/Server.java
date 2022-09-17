@@ -12,9 +12,10 @@ import java.util.Iterator;
 import java.util.Set;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
+import java.nio.channels.Channel;
+import java.nio.charset.Charset;
+import java.util.HashSet;
 
 /**
  * Processus serveur qui ecoute les connexion entrantes,
@@ -30,12 +31,12 @@ public class Server extends Thread implements ITchat {
     private ServerUI serverUI;
 
 	// TODO A completer
+    private Charset charset = Charset.forName("UTF-8");
     private String ip;
     private int port;
     private ServerSocketChannel ssc;
     private Selector selector;
-    private ByteBuffer buffer = ByteBuffer.allocate(1024);
-    private StringBuffer  message = new StringBuffer();
+    private static String split = "#@#";
 
     /**
      * Constructeur
@@ -57,6 +58,7 @@ public class Server extends Thread implements ITchat {
         ssc.configureBlocking(false);
         InetSocketAddress inetSocket = new InetSocketAddress(ip, port);
         ssc.bind(inetSocket);
+        ssc.register(selector, SelectionKey.OP_ACCEPT);
         sendLogToUI("Serveur créer");
         } catch(IOException e){
             System.out.println("Exception throw dans le constructeur de la classe Server");
@@ -76,49 +78,77 @@ public class Server extends Thread implements ITchat {
      * Process principal du server
      */
     public void run(){
-
-        // TODO A completer
-        sendLogToUI("Lancement du serveur");
         try{
-        while (this.serverUI.isRunning()) {
-            try{
-                ssc.register(selector, SelectionKey.OP_ACCEPT);
-                } catch(ClosedChannelException e){
-                    System.out.println("ClosedChannelException exception");
-                    e.getStackTrace();
-                }
-            selector.select();
-            Set<SelectionKey> keys = selector.selectedKeys();
-            Iterator<SelectionKey> iterateur = keys.iterator();
-            while (iterateur.hasNext()) {
-                SelectionKey key = iterateur.next();
-                if (key.isAcceptable()) {
-                    SocketChannel client = ssc.accept();
-                    client.configureBlocking(false);
-                    client.register(selector, SelectionKey.OP_READ);
-                } else if (key.isReadable()) {
-                    SocketChannel client = (SocketChannel) key.channel();
-                    buffer.clear();
-                    client.read(buffer);
-                    buffer.flip();
-                    while(buffer.hasRemaining()) {
-                        char c = (char) buffer.get();
-                        if (c == '\r' || c == '\n') break;
-                             message.append(c);
-                }
-                sendLogToUI("Message de " +  message);
-            }
-            message.setLength(0);
-            iterateur.remove();
+        while(serverUI.isRunning()) {
+            int readyChannels = selector.select();
+            if(readyChannels == 0) continue; 
+            Set selectedKeys = selector.selectedKeys();
+            Iterator keyIterator = selectedKeys.iterator();
+            while(keyIterator.hasNext()) {
+                 SelectionKey sk = (SelectionKey) keyIterator.next();
+                 keyIterator.remove();
+                 selectionKeyType(ssc,sk);
             }
         }
-        sendLogToUI("Fermeture du serveur");
-        ssc.close();
-    } catch(IOException e){
-        System.out.println("Exception throw dans la méthode run de la classe Server");
-        e.getStackTrace();
-    }
+        } catch(Exception e){
+
+        }
     } 
 		
 	// TODO A completer
+    public void selectionKeyType(ServerSocketChannel scc,SelectionKey sk) throws IOException {
+        if(sk.isAcceptable())
+        {
+            SocketChannel sc = scc.accept();
+            sc.configureBlocking(false);
+            sc.register(selector, SelectionKey.OP_READ);
+            
+            sk.interestOps(SelectionKey.OP_ACCEPT);
+            sendLogToUI("Connection du client sur :" + sc.getRemoteAddress());
+        }
+        if(sk.isReadable())
+        {
+            SocketChannel sc = (SocketChannel)sk.channel(); 
+            ByteBuffer buffer = ByteBuffer.allocate(1024);
+            StringBuilder message = new StringBuilder();
+            try
+            {
+                while(sc.read(buffer) > 0)
+                {
+                    buffer.flip();
+                    message.append(charset.decode(buffer));
+                }
+                sk.interestOps(SelectionKey.OP_READ);
+            }
+            catch (IOException io)
+            {
+                sk.cancel();
+                if(sk.channel() != null)
+                {
+                    sk.channel().close();
+                }
+            }
+            if(message.length() > 0)
+            {
+                String[] arrayContent = message.toString().split(split);;
+                    String messageFinal = arrayContent[0];
+                    BroadCast(selector, null, messageFinal);
+                } 
+            }
+            
+        }
+
+
+    public void BroadCast(Selector selector, SocketChannel sk, String message) throws IOException {
+        //Envoie du message à tout les clients connecté, même à l'envoyeur, à revoir
+        for(SelectionKey key : selector.keys())
+        {
+            Channel targetchannel = key.channel();
+            if(targetchannel instanceof SocketChannel && targetchannel!=sk)
+            {
+                SocketChannel dest = (SocketChannel)targetchannel;
+                sendLogToUI(""+dest.write(charset.encode(message)) +"\n");
+            }
+        }
+    }
 }
