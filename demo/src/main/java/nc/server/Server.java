@@ -91,14 +91,15 @@ public class Server extends Thread implements ITchat {
             }
         }
         } catch(Exception e){
-
+            System.out.println("Exception throw dans la méthode run de la classe Server");
+            e.printStackTrace();
         }
     } 
 		
 	// TODO A completer
     public void selectionKeyType(ServerSocketChannel scc,SelectionKey sk) throws IOException {
-        if(sk.isAcceptable())
-        {
+        if(sk.isAcceptable()){
+            //On accepte la connection
             SocketChannel sc = scc.accept();
             sc.configureBlocking(false);
             sc.register(selector, SelectionKey.OP_READ);
@@ -106,41 +107,32 @@ public class Server extends Thread implements ITchat {
             sk.interestOps(SelectionKey.OP_ACCEPT);
             sendLogToUI("Connection du client sur :" + sc.getRemoteAddress());
         }
-        if(sk.isReadable())
-        {
+        if(sk.isReadable()){
             SocketChannel sc = (SocketChannel)sk.channel(); 
             ByteBuffer buffer = ByteBuffer.allocate(1024);
             StringBuilder message = new StringBuilder();
-            try
-            {
-                while(sc.read(buffer) > 0)
-                {
+            try{
+                while(sc.read(buffer) > 0){
                     buffer.flip();
                     message.append(charset.decode(buffer));
                 }
                 sk.interestOps(SelectionKey.OP_READ);
             }
-            catch (IOException io)
-            {
+            catch (IOException io){
                 sk.cancel();
-                if(sk.channel() != null)
-                {
-                    sk.channel().close();
-                }
+                sk.channel().close();
             }
-            if(message.length() > 0)
-            {
+            if(message.length() > 0){
                 String[] arrayContent = message.toString().split(split);;
-                    String messageFinal = arrayContent[0];
-                    BroadCast(messageFinal, selector, null);
-                } 
-            }
-            
+                String messageFinal = arrayContent[0];
+                BroadCast(messageFinal, selector, null);
+            } 
         }
+    }
 
-
+//Envoie du message à tout les clients connecté
     public void BroadCast(String message, Selector selector, SocketChannel sk) throws IOException {
-        //Envoie du message à tout les clients connecté, même à l'envoyeur, à revoir
+        //Pour chaque clé utilisé du selecteur, soit chaque client connecté au serveur
         for(SelectionKey key : selector.keys())
         {
             Channel targetchannel = key.channel();

@@ -89,19 +89,17 @@ public class Client extends Thread implements ITchat {
     }
 
     private void readSelectKey(SelectionKey sk) throws IOException {
-      if(sk.isReadable())
-      {
+      if(sk.isReadable()){
           SocketChannel sc = (SocketChannel)sk.channel();
-          
-          ByteBuffer buff = ByteBuffer.allocate(1024);
+
+          ByteBuffer buffer = ByteBuffer.allocate(1024);
           String message = "";
-          while(sc.read(buff) > 0)
+          while(sc.read(buffer) > 0)
           {
-              buff.flip();
-              message += charset.decode(buff);
+            buffer.flip();
+            message = message + charset.decode(buffer);
           }
           clientUI.appendMessage("" + message + "\n");
-          sk.interestOps(SelectionKey.OP_READ);
       }
   }
 }
