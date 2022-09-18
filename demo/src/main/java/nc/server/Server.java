@@ -36,7 +36,7 @@ public class Server extends Thread implements ITchat {
     private int port;
     private ServerSocketChannel ssc;
     private Selector selector;
-    private static String split = "#@#";
+    private static String split = "__";
 
     /**
      * Constructeur
@@ -125,18 +125,18 @@ public class Server extends Thread implements ITchat {
             if(message.length() > 0){
                 String[] arrayContent = message.toString().split(split);;
                 String messageFinal = arrayContent[0];
-                BroadCast(messageFinal, selector, null);
+                BroadCast(messageFinal, selector);
             } 
         }
     }
 
 //Envoie du message à tout les clients connecté
-    public void BroadCast(String message, Selector selector, SocketChannel sk) throws IOException {
+    public void BroadCast(String message, Selector selector) throws IOException {
         //Pour chaque clé utilisé du selecteur, soit chaque client connecté au serveur
         for(SelectionKey key : selector.keys())
         {
             Channel targetchannel = key.channel();
-            if(targetchannel instanceof SocketChannel && targetchannel!=sk)
+            if(targetchannel instanceof SocketChannel && targetchannel!=null)
             {
                 SocketChannel dest = (SocketChannel)targetchannel;
                 dest.write(charset.encode(message));
